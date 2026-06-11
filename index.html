@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:widget="http://www.netvibes.com/ns/">
 <head>
-  <title>TKD Test</title>
+  <title>TKD Test - API</title>
 
   <meta name="description" content="TKD widget test" />
   <meta name="keywords" content="TKD, 3DEXPERIENCE, widget" />
@@ -15,14 +15,15 @@
     TKDWidget.start = function () {
       widget.body.innerHTML = "<h3>Hello 3DEXPERIENCE On Premise!</h3>";
 
-      // Importar cliente HTTP
+      // Importar cliente HTTP nativo de DS
       require(['DS/WAFData/WAFData'], function (WAFData) {
         widget.body.innerHTML += "<h3>WAFData module loaded successfully.</h3>";
 
-        // URL hardcodeada temporalmente para el baby step
-        var spaceUrl = "https://3dspace.teckdes.com:443/3DSpace/";
+        // URL corregida para el entorno (3dspace24) y sin la barra final
+        var spaceUrl = "https://3dspace24.teckdes.com/3dspace";
         var endpoint = spaceUrl + "/resources/v1/modeler/projects";
 
+        // Petición GET a los Project Web Services
         WAFData.authenticatedRequest(endpoint, {
           method: 'GET',
           type: 'json',
@@ -30,21 +31,22 @@
             'Accept': 'application/json'
           },
           onComplete: function (response) {
-            console.log("¡Respuesta de 3DSpace recibida!", data);
-            widget.body.innerHTML += "<h3>Conexión exitosa! </h3>" + 
-                                    "<p>F12 para ver el JSON con los datos.</p>";
+            // Variable response matcheada correctamente
+            console.log("¡Respuesta de 3DSpace recibida!", response);
+            widget.body.innerHTML += "<h3>¡Conexión exitosa! ✅</h3>" + 
+                                     "<p>F12 para ver el JSON con los datos en la consola.</p>";
           },
           onFailure: function (error, data) {
             console.error("Error al conectar con 3DSpace:", error);
             console.error("Detalle del servidor:", data);
             
-            widget.body.innerHTML = "<h3>Error en la API</h3>" + 
+            widget.body.innerHTML = "<h3>Error en la API ❌</h3>" + 
                                     "<p>Revisá la consola para más detalles.</p>";
           }
         });
       },  function (error) {
             widget.body.innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
-          });
+      });
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
