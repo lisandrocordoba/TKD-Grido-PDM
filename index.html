@@ -13,7 +13,37 @@
     var TKDWidget = {};
 
     TKDWidget.start = function () {
-      widget.body.innerHTML = "Hola 3DEXPERIENCE Cloud - Additional App";
+      widget.body.innerHTML = "<h3>Hello 3DEXPERIENCE On Premise!</h3>";
+
+      // Importar cliente HTTP
+      require(['DS/WAFData/WAFData'], function (WAFData) {
+        widget.body.innerHTML += "<h3>WAFData module loaded successfully.</h3>";
+
+        // URL hardcodeada temporalmente para el baby step
+        var spaceUrl = "https://3dspace.teckdes.com:443/3DSpace/";
+        var endpoint = spaceUrl + "/resources/v1/modeler/projects";
+
+        WAFData.authenticatedRequest(endpoint, {
+          method: 'GET',
+          type: 'json',
+          headers: {
+            'Accept': 'application/json'
+          },
+          onComplete: function (response) {
+            console.log("¡Respuesta de 3DSpace recibida!", data);
+            widget.body.innerHTML += "<h3>Conexión exitosa! </h3>" + 
+                                    "<p>F12 para ver el JSON con los datos.</p>";
+          },
+          onFailure: function (error, data) {
+            console.error("Error al conectar con 3DSpace:", error);
+            console.error("Detalle del servidor:", data);
+            
+            widget.body.innerHTML = "<h3>Error en la API</h3>" + 
+                                    "<p>Revisá la consola para más detalles.</p>";
+      });, function (error) {
+            widget.body.innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
+          }
+        });
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
