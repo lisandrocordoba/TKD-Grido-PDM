@@ -40,10 +40,11 @@
             
             widget.body.innerHTML = "<h3>Error en la API</h3>" + 
                                     "<p>Revisá la consola para más detalles.</p>";
-      });, function (error) {
-            widget.body.innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
           }
         });
+      },  function (error) {
+            widget.body.innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
+          });
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
