@@ -12,35 +12,31 @@
   <script type="text/javascript">
     var TKDWidget = {};
 
-    // 1. Dibuja la UI sin "onclick" quemado en el HTML
     TKDWidget.start = function () {
-      var uiHtml = '<div>';
-      uiHtml += '<input type="text" id="input-id" placeholder="ID del proyecto..." style="padding: 5px; width: 250px; margin-right: 10px;" />';
-      uiHtml += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer;">Buscar</button>';
-      uiHtml += '</div>';
+      var html = '<div>';
+      html += '<input type="text" id="input-id" placeholder="ID del proyecto..." style="padding: 5px; width: 250px; margin-right: 10px;" />';
+      html += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer;">Buscar</button>';
+      html += '</div>';
       
-      uiHtml += '<hr style="margin-top: 15px;" />';
-      uiHtml += '<div id="resultados" style="margin-top: 15px;"><p style="color: #666;">Esperando búsqueda...</p></div>';
+      html += '<hr style="margin-top: 15px;" />';
+      html += '<div id="resultados" style="margin-top: 15px;"><p style="color: #666;">Esperando búsqueda...</p></div>';
 
-      widget.body.innerHTML = uiHtml;
+      widget.body.innerHTML = html;
 
-      // ¡Acá está la clave! Atamos el clic del botón a la función mediante JavaScript
       var botonBuscar = document.getElementById("btn-buscar");
       botonBuscar.addEventListener("click", TKDWidget.ejecutarBusqueda);
     };
 
-    // 2. Tu código original de consulta
     TKDWidget.ejecutarBusqueda = function () {
       var idIngresado = document.getElementById("input-id").value.trim();
       var divResultados = document.getElementById("resultados");
       
-      divResultados.innerHTML = "<h3>Consultando... ⏳</h3>";
+      divResultados.innerHTML = "<h3>Consultando...</h3>";
 
       require(['DS/WAFData/WAFData'], function (WAFData) {
         var spaceUrl = "https://3dspace24.teckdes.com/3dspace";
         var endpoint = spaceUrl + "/resources/v1/modeler/projects";
 
-        // Si escribió algo, le agregamos el ID a la URL (para buscar uno solo)
         if (idIngresado !== "") {
           endpoint += "/" + idIngresado;
         }
