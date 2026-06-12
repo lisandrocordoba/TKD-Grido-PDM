@@ -17,7 +17,7 @@
       var html = '<div>';
       html += '<input type="text" id="input-id" placeholder="ID del proyecto..." style="padding: 5px; width: 250px; margin-right: 10px;" />';
       html += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer;">Buscar</button>';
-      html += '<button onclick="TKDWidget.testPresupuestoLegacy()" style="padding: 5px 15px; cursor: pointer; background: #d9534f; color: white; border: none; margin-left: 10px;">Test Legacy</button>';
+      html += '<button id="btn-legacy" style="padding: 5px 15px; cursor: pointer; background: #d9534f; color: white; border: none; margin-left: 10px;">Test Legacy</button>';
       html += '</div>';
       
       html += '<hr style="margin-top: 15px;" />';
@@ -27,6 +27,9 @@
 
       var botonBuscar = document.getElementById("btn-buscar");
       botonBuscar.addEventListener("click", TKDWidget.ejecutarBusqueda);
+
+      var botonLegacy = document.getElementById("btn-legacy");
+      botonLegacy.addEventListener("click", TKDWidget.testPresupuestoLegacy);
     };
 
     TKDWidget.ejecutarBusqueda = function () {
