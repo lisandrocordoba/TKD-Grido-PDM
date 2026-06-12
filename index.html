@@ -31,10 +31,21 @@
             'Accept': 'application/json'
           },
           onComplete: function (response) {
-            // Variable response matcheada correctamente
-            console.log("¡Respuesta de 3DSpace recibida!", response);
-            widget.body.innerHTML += "<h3>¡Conexión exitosa! ✅</h3>" + 
-                                     "<p>F12 para ver el JSON con los datos en la consola.</p>";
+            console.log("Respuesta de 3DSpace recibida!", response);
+
+            var projects = response.data;
+            if (projects && projects.length > 0) {
+              var html = "<h3>Proyectos en 3DSpace:</h3>";
+              html += "<ul>";
+              for (var i = 0; i < projects.length; i++) {
+                var dataElements = projects[i].dataelements;
+                html += "<li>" + dataElements.name + "</li>";
+              }
+              html += "</ul>";
+            } else {
+              html = "<h3>No se encontraron proyectos en 3DSpace.</h3>";
+            }
+            widget.body.innerHTML = html;
           },
           onFailure: function (error, data) {
             console.error("Error al conectar con 3DSpace:", error);
