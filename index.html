@@ -1,69 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:widget="http://www.netvibes.com/ns/">
 <head>
-  <title>TKD Test - API</title>
-
-  <meta name="description" content="TKD widget test" />
-  <meta name="keywords" content="TKD, 3DEXPERIENCE, widget" />
+  <title>TKD Buscador de Proyectos</title>
+  
+  <style>
+    /* Estilos básicos para que no se vea feo */
+    body { font-family: Arial, sans-serif; font-size: 14px; color: #333; }
+    .panel-control { background: #f4f5f6; padding: 15px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 20px; }
+    .btn { background: #005686; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    .btn:hover { background: #00446b; }
+    .input-box { padding: 8px; width: 280px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; }
+    .separador { margin: 15px 0; border: none; border-top: 1px solid #ccc; }
+    .item-proyecto { padding: 8px; border-bottom: 1px solid #eee; }
+  </style>
 
   <script type="text/javascript">
-    var TKDWidget = {};
+    var TKDWidget = {
+      spaceUrl: "https://3dspace24.teckdes.com/3dspace"
+    };
 
-    TKDWidget.start = function () {
-      widget.body.innerHTML = "<h3>Hello 3DEXPERIENCE On Premise!</h3>";
-
-      // Importar cliente HTTP nativo de DS
+    // 1. Función genérica para no repetir el código de WAFData 20 veces
+    TKDWidget.consultarAPI = function(endpoint, callbackExito) {
+      document.getElementById("contenedor-resultados").innerHTML = "<p>Consultando a 3DSpace... ⏳</p>";
+      
       require(['DS/WAFData/WAFData'], function (WAFData) {
-        widget.body.innerHTML += "<h3>WAFData module loaded successfully.</h3>";
-
-        // URL corregida para el entorno (3dspace24) y sin la barra final
-        var spaceUrl = "https://3dspace24.teckdes.com/3dspace";
-        var endpoint = spaceUrl + "/resources/v1/modeler/projects" + "?$fields=all";
-
-        // Petición GET a los Project Web Services
         WAFData.authenticatedRequest(endpoint, {
           method: 'GET',
           type: 'json',
-          headers: {
-            'Accept': 'application/json'
-          },
+          headers: { 'Accept': 'application/json' },
           onComplete: function (response) {
-            console.log("Respuesta de 3DSpace recibida!", response);
-
-            var projects = response.data;
-            if (projects && projects.length > 0) {
-              var html = "<h3>Proyectos en 3DSpace:</h3>";
-              html += "<ul>";
-              for (var i = 0; i < projects.length; i++) {
-                var dataElements = projects[i].dataelements;
-                html += "<li>" + dataElements.name + "</li>";
-              }
-              html += "</ul>";
-            } else {
-              html = "<h3>No se encontraron proyectos en 3DSpace.</h3>";
-            }
-            widget.body.innerHTML = html;
+            callbackExito(response); // Si sale bien, le pasa los datos a la función que lo llamó
           },
-          onFailure: function (error, data) {
-            console.error("Error al conectar con 3DSpace:", error);
-            console.error("Detalle del servidor:", data);
-            
-            widget.body.innerHTML = "<h3>Error en la API ❌</h3>" + 
-                                    "<p>Revisá la consola para más detalles.</p>";
+          onFailure: function (error) {
+            document.getElementById("contenedor-resultados").innerHTML = "<p style='color:red;'>Error al conectar con la API ❌</p>";
+            console.error(error);
           }
         });
-      },  function (error) {
-            widget.body.innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
       });
+    };
+
+    // 2. Acción: Listar Todos
+    TKDWidget.listarTodos = function() {
+      var endpoint = TKDWidget.spaceUrl + "/resources/v1/modeler/projects";
+      
+      TKDWidget.consultarAPI(endpoint, function(response) {
+        var proyectos = response.data;
+        if (proyectos && proyectos.length > 0) {
+          var html = "<h3>Total: " + proyectos.length + " proyectos</h3><ul>";
+          for (var i = 0; i < proyectos.length; i++) {
+            var props = proyectos[i].dataelements;
+            html += "<li class='item-proyecto'><strong>" + props.title + "</strong><br><small style='color:#666;'>ID: " + proyectos[i].id + "</small></li>";
+          }
+          html += "</ul>";
+          document.getElementById("contenedor-resultados").innerHTML = html;
+        } else {
+          document.getElementById("contenedor-resultados").innerHTML = "<p>No se encontraron proyectos.</p>";
+        }
+      });
+    };
+
+    // 3. Acción: Buscar por ID
+    TKDWidget.buscarPorId = function() {
+      var idIngresado = document.getElementById("input-id").value.trim();
+      
+      if (idIngresado === "") {
+        alert("¡Tenés que ingresar un ID primero!");
+        return;
+      }
+
+      // Le pegamos directo a la URL del ID específico
+      var endpoint = TKDWidget.spaceUrl + "/resources/v1/modeler/projects/" + idIngresado;
+      
+      TKDWidget.consultarAPI(endpoint, function(response) {
+        var proyectos = response.data;
+        if (proyectos && proyectos.length > 0) {
+          var props = proyectos[0].dataelements;
+          var html = "<h3>Resultado:</h3>";
+          html += "<div class='item-proyecto'>";
+          html += "<p><strong>Nombre:</strong> " + props.title + "</p>";
+          html += "<p><strong>Estado:</strong> " + props.state + "</p>";
+          html += "<p><strong>Última Modificación:</strong> " + new Date(props.modified).toLocaleDateString() + "</p>";
+          html += "</div>";
+          document.getElementById("contenedor-resultados").innerHTML = html;
+        } else {
+          document.getElementById("contenedor-resultados").innerHTML = "<p>No existe ningún proyecto con ese ID.</p>";
+        }
+      });
+    };
+
+    // 4. El punto de arranque: Dibuja los botones vacíos
+    TKDWidget.start = function () {
+      var uiHTML = `
+        <div class="panel-control">
+          <button class="btn" onclick="TKDWidget.listarTodos()">📋 Listar Todos los Proyectos</button>
+          
+          <hr class="separador">
+          
+          <div>
+            <input type="text" id="input-id" class="input-box" placeholder="Pegá el ID acá (ej: 29C5C903...)">
+            <button class="btn" onclick="TKDWidget.buscarPorId()">🔍 Buscar por ID</button>
+          </div>
+        </div>
+
+        <div id="contenedor-resultados">
+          <p style="color: #888;">Esperando acción...</p>
+        </div>
+      `;
+      
+      widget.body.innerHTML = uiHTML;
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
   </script>
 </head>
-
 <body>
 </body>
 </html>
