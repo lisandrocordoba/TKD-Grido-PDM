@@ -21,7 +21,7 @@
 
         // URL corregida para el entorno (3dspace24) y sin la barra final
         var spaceUrl = "https://3dspace24.teckdes.com/3dspace";
-        var endpoint = spaceUrl + "/resources/v1/modeler/projects";
+        var endpoint = spaceUrl + "/resources/v1/modeler/projects" + "?$fields=all";
 
         // Petición GET a los Project Web Services
         WAFData.authenticatedRequest(endpoint, {
