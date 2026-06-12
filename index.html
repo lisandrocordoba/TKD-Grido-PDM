@@ -10,14 +10,16 @@
   <meta name="keywords" content="TKD, 3DEXPERIENCE, widget" />
 
   <script type="text/javascript">
+  //<![CDATA[
     var TKDWidget = {};
 
     TKDWidget.start = function () {
       var html = '<div>';
       html += '<input type="text" id="input-id" placeholder="ID del proyecto..." style="padding: 5px; width: 250px; margin-right: 10px;" />';
       html += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer;">Buscar</button>';
-      html += '<button onclick="TKDWidget.testPresupuestoLegacy()" style="padding: 5px 15px; cursor: pointer; background: #d9534f; color: white; border: none; margin-left: 10px;">Test Legacy</button>
+      html += '<button onclick="TKDWidget.testPresupuestoLegacy()" style="padding: 5px 15px; cursor: pointer; background: #d9534f; color: white; border: none; margin-left: 10px;">Test Legacy</button>';
       html += '</div>';
+      
       html += '<hr style="margin-top: 15px;" />';
       html += '<div id="resultados" style="margin-top: 15px;"><p style="color: #666;">Esperando búsqueda...</p></div>';
 
@@ -81,22 +83,21 @@
       divResultados.innerHTML = "<h3>Hackeando la Matrix... ⏳</h3>";
 
       require(['DS/WAFData/WAFData'], function (WAFData) {
-        // La URL con el objectId viejo que vimos en tu captura anterior
+        // La URL con el objectId viejo
         var endpoint = "https://3dspace24.teckdes.com/3dspace/common/emxFreezePaneGetData.jsp?fpTimeStamp=1780509900962&tureCompare=FALSE&objectId=9776.56983.19999.60570";
 
-        // El payload exacto que me pasaste en la última imagen
+        // El payload exacto capturado en la red
         var payload = "fpTimeStamp=1780509900961&rowIds=0:0,0:0,0,0:0,0,0,0:0,0,0,1&IsStructureCompare=FALSE";
 
         WAFData.authenticatedRequest(endpoint, {
           method: 'POST',
-          type: 'text', // ATENCIÓN: Pedimos texto porque nos va a devolver XML, no JSON
+          type: 'text', // Pedimos texto porque devuelve XML
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
           data: payload,
           onComplete: function (response) {
             console.log("¡XML RECIBIDO!", response);
-            // Pintamos el XML crudo en un recuadro para verlo bien
             divResultados.innerHTML = "<h3>XML Legacy Recibido:</h3><textarea style='width:100%; height:300px; font-family:monospace;'>" + response + "</textarea>";
           },
           onFailure: function (error, data) {
@@ -110,6 +111,7 @@
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
+  //]]>
   </script>
 </head>
 <body>
