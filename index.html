@@ -12,54 +12,51 @@
   <script type="text/javascript">
     var TKDWidget = {};
 
-    // 1. Esta función dibuja la interfaz inicial (Input y Botón)
+    // 1. Dibuja la UI sin "onclick" quemado en el HTML
     TKDWidget.start = function () {
       var uiHtml = '<div>';
       uiHtml += '<input type="text" id="input-id" placeholder="ID del proyecto..." style="padding: 5px; width: 250px; margin-right: 10px;" />';
-      uiHtml += '<button onclick="TKDWidget.ejecutarBusqueda()" style="padding: 5px 15px; cursor: pointer;">Buscar</button>';
+      uiHtml += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer;">Buscar</button>';
       uiHtml += '</div>';
       
-      // Acá adentro van a caer las respuestas de la API
       uiHtml += '<hr style="margin-top: 15px;" />';
       uiHtml += '<div id="resultados" style="margin-top: 15px;"><p style="color: #666;">Esperando búsqueda...</p></div>';
 
       widget.body.innerHTML = uiHtml;
+
+      // ¡Acá está la clave! Atamos el clic del botón a la función mediante JavaScript
+      var botonBuscar = document.getElementById("btn-buscar");
+      botonBuscar.addEventListener("click", TKDWidget.ejecutarBusqueda);
     };
 
-    // 2. Tu código original intacto, metido adentro de esta acción
+    // 2. Tu código original de consulta
     TKDWidget.ejecutarBusqueda = function () {
       var idIngresado = document.getElementById("input-id").value.trim();
       var divResultados = document.getElementById("resultados");
       
       divResultados.innerHTML = "<h3>Consultando... ⏳</h3>";
 
-      // Importar cliente HTTP nativo de DS
       require(['DS/WAFData/WAFData'], function (WAFData) {
         var spaceUrl = "https://3dspace24.teckdes.com/3dspace";
         var endpoint = spaceUrl + "/resources/v1/modeler/projects";
 
-        // Baby step: Si escribió un ID, se lo pegamos al final de la URL
+        // Si escribió algo, le agregamos el ID a la URL (para buscar uno solo)
         if (idIngresado !== "") {
           endpoint += "/" + idIngresado;
         }
 
-        // Petición GET a los Project Web Services
         WAFData.authenticatedRequest(endpoint, {
           method: 'GET',
           type: 'json',
-          headers: {
-            'Accept': 'application/json'
-          },
+          headers: { 'Accept': 'application/json' },
           onComplete: function (response) {
             console.log("Respuesta de 3DSpace recibida!", response);
 
             var projects = response.data;
             if (projects && projects.length > 0) {
-              var html = "<h3>Proyectos en 3DSpace:</h3>";
-              html += "<ul>";
+              var html = "<h3>Proyectos encontrados:</h3><ul>";
               for (var i = 0; i < projects.length; i++) {
                 var dataElements = projects[i].dataelements;
-                // Le sumé el ID a la lista como en tu captura
                 html += "<li>" + dataElements.name + " (ID: " + projects[i].id + ")</li>";
               }
               html += "</ul>";
@@ -70,21 +67,17 @@
           },
           onFailure: function (error, data) {
             console.error("Error al conectar con 3DSpace:", error);
-            console.error("Detalle del servidor:", data);
-            
-            divResultados.innerHTML = "<h3>Error en la API ❌</h3>" + 
-                                      "<p>Revisá la consola para más detalles.</p>";
+            divResultados.innerHTML = "<h3>Error en la API ❌</h3><p>Revisá la consola para más detalles.</p>";
           }
         });
-      },  function (error) {
-            document.getElementById("resultados").innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
+      }, function (error) {
+        document.getElementById("resultados").innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
       });
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
   </script>
 </head>
-
 <body>
 </body>
 </html>
