@@ -62,8 +62,12 @@
             }
           },
           onFailure: function (error, data) {
-            console.error("Error al conectar con 3DSpace:", error);
-            divResultados.innerHTML = "<h3>Error en la API ❌</h3><p>Revisá la consola para más detalles.</p>";
+            if (idIngresado !== "") {
+              divResultados.innerHTML = "<h3>No se encontró el proyecto con ID: " + idIngresado + "</h3>";
+            } else {
+              divResultados.innerHTML = "<h3>Error en la API ❌</h3><p>Revisá la consola para más detalles.</p>";
+              console.error("Error en la solicitud a 3DSpace:", error, data);
+            }
           }
         });
       }, function (error) {
