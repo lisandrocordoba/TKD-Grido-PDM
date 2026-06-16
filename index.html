@@ -10,7 +10,6 @@
   <meta name="keywords" content="TKD, 3DEXPERIENCE, widget" />
 
   <script type="text/javascript">
-  //<![CDATA[
     var TKDWidget = {};
 
     TKDWidget.start = function () {
@@ -32,6 +31,7 @@
       botonLegacy.addEventListener("click", TKDWidget.testPresupuestoLegacy);
     };
 
+  
     TKDWidget.ejecutarBusqueda = function () {
       var idIngresado = document.getElementById("input-id").value.trim();
       var divResultados = document.getElementById("resultados");
@@ -50,9 +50,9 @@
           method: 'GET',
           type: 'json',
           headers: { 'Accept': 'application/json' },
+
           onComplete: function (response) {
             console.log("Respuesta de 3DSpace recibida!", response);
-
             var projects = response.data;
             if (projects && projects.length > 0) {
               var html = "<h3>Proyectos encontrados:</h3><ul>";
@@ -66,35 +66,36 @@
               divResultados.innerHTML = "<h3>No se encontraron proyectos en 3DSpace.</h3>";
             }
           },
+
           onFailure: function (error, data) {
             if (idIngresado !== "") {
               divResultados.innerHTML = "<h3>No se encontró el proyecto con ID: " + idIngresado + "</h3>";
             } else {
-              divResultados.innerHTML = "<h3>Error en la API ❌</h3><p>Revisá la consola para más detalles.</p>";
+              divResultados.innerHTML = "<h3>Error en la API</h3><p>Revisá la consola para más detalles.</p>";
               console.error("Error en la solicitud a 3DSpace:", error, data);
             }
           }
         });
-      }, function (error) {
+      }, 
+      
+      function (error) {
         document.getElementById("resultados").innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
       });
     };
 
-    // Prueba de concepto: Ataque directo a la API Legacy
+
+
     TKDWidget.testPresupuestoLegacy = function () {
       var divResultados = document.getElementById("resultados");
       divResultados.innerHTML = "<h3>Hackeando la Matrix... ⏳</h3>";
 
       require(['DS/WAFData/WAFData'], function (WAFData) {
-        // La URL con el objectId viejo
         var endpoint = "https://3dspace24.teckdes.com/3dspace/common/emxFreezePaneGetData.jsp?fpTimeStamp=1780509900962&tureCompare=FALSE&objectId=9776.56983.19999.60570";
-
-        // El payload exacto capturado en la red
         var payload = "fpTimeStamp=1780509900961&rowIds=0:0,0:0,0,0:0,0,0,0:0,0,0,1&IsStructureCompare=FALSE";
 
         WAFData.authenticatedRequest(endpoint, {
           method: 'POST',
-          type: 'text', // Pedimos texto porque devuelve XML
+          type: 'text',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
@@ -105,7 +106,7 @@
           },
           onFailure: function (error, data) {
             console.error("Falló la llamada legacy:", error);
-            divResultados.innerHTML = "<h3>Error en endpoint Legacy ❌</h3><p>Revisá la consola.</p>";
+            divResultados.innerHTML = "<h3>Error en endpoint Legacy</h3><p>Revisá la consola.</p>";
           }
         });
       }, function (error) {
@@ -114,7 +115,6 @@
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
-  //]]>
   </script>
 </head>
 <body>
