@@ -4,18 +4,28 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:widget="http://www.netvibes.com/ns/">
 <head>
-  <title>TKD Test - API</title>
+  <title>TKD Test - API Evaluator</title>
 
   <meta name="description" content="TKD widget test" />
   <meta name="keywords" content="TKD, 3DEXPERIENCE, widget" />
 
   <script type="text/javascript">
+  //<![CDATA[
     var TKDWidget = {};
 
     TKDWidget.start = function () {
-      var html = '<div>';
+      var html = '<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">';
       html += '<input type="text" id="input-id" placeholder="ID del proyecto..." style="padding: 5px; width: 250px; margin-right: 10px;" />';
-      html += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer;">Buscar (Endpoint assessments)</button>';
+      
+      // Dropdown para elegir el sub-endpoint del proyecto
+      html += '<select id="select-endpoint" style="padding: 5px;">';
+      html += '<option value="direct">Proyecto (+$fields=all)</option>';
+      html += '<option value="assessments">/assessments</option>';
+      html += '<option value="folders">/folders</option>';
+      html += '<option value="tasks">/tasks</option>';
+      html += '</select>';
+
+      html += '<button id="btn-buscar" style="padding: 5px 15px; cursor: pointer; background: #0275d8; color: white; border: none;">Ejecutar GET</button>';
       html += '<button id="btn-legacy" style="padding: 5px 15px; cursor: pointer; background: #d9534f; color: white; border: none; margin-left: 10px;">Test Legacy</button>';
       html += '</div>';
       
@@ -30,10 +40,10 @@
       var botonLegacy = document.getElementById("btn-legacy");
       botonLegacy.addEventListener("click", TKDWidget.testPresupuestoLegacy);
     };
-
   
     TKDWidget.ejecutarBusqueda = function () {
       var idIngresado = document.getElementById("input-id").value.trim();
+      var tipoEndpoint = document.getElementById("select-endpoint").value;
       var divResultados = document.getElementById("resultados");
       
       divResultados.innerHTML = "<h3>Consultando...</h3>";
@@ -42,8 +52,13 @@
         var spaceUrl = "https://3dspace24.teckdes.com/3dspace";
         var endpoint = spaceUrl + "/resources/v1/modeler/projects";
 
+        // Lógica dinámica según el dropdown
         if (idIngresado !== "") {
-          endpoint += "/" + idIngresado + "/assessments";
+          if (tipoEndpoint === "direct") {
+            endpoint += "/" + idIngresado + "?$fields=all";
+          } else {
+            endpoint += "/" + idIngresado + "/" + tipoEndpoint;
+          }
         }
 
         WAFData.authenticatedRequest(endpoint, {
@@ -53,23 +68,14 @@
 
           onComplete: function (response) {
             console.log("Respuesta de 3DSpace recibida!", response);
-            var projects = response.data;
-            if (projects && projects.length > 0) {
-              var html = "<h3>Proyectos encontrados:</h3><ul>";
-              for (var i = 0; i < projects.length; i++) {
-                var dataElements = projects[i].dataelements;
-                html += "<li>" + dataElements.name + " (ID: " + projects[i].id + ")</li>";
-              }
-              html += "</ul>";
-              divResultados.innerHTML = html;
-            } else {
-              divResultados.innerHTML = "<h3>No se encontraron proyectos en 3DSpace.</h3>";
-            }
+            // Imprimimos el JSON en un textarea en lugar de la lista <ul>
+            var jsonString = JSON.stringify(response, null, 2);
+            divResultados.innerHTML = "<h3>JSON Recibido (" + tipoEndpoint + "):</h3><textarea style='width:100%; height:300px; font-family:monospace; background: #f8f9fa;' readonly>" + jsonString + "</textarea>";
           },
 
           onFailure: function (error, data) {
             if (idIngresado !== "") {
-              divResultados.innerHTML = "<h3>No se encontró el proyecto con ID: " + idIngresado + "</h3>";
+              divResultados.innerHTML = "<h3>Falló la consulta al endpoint: /" + tipoEndpoint + "</h3><p>Verificá que el ID sea correcto.</p>";
             } else {
               divResultados.innerHTML = "<h3>Error en la API</h3><p>Revisá la consola para más detalles.</p>";
               console.error("Error en la solicitud a 3DSpace:", error, data);
@@ -82,8 +88,6 @@
         document.getElementById("resultados").innerHTML = "<h3>Error al cargar WAFData</h3>" + error;
       });
     };
-
-
 
     TKDWidget.testPresupuestoLegacy = function () {
       var divResultados = document.getElementById("resultados");
@@ -115,6 +119,7 @@
     };
 
     widget.addEvent("onLoad", TKDWidget.start);
+  //]]>
   </script>
 </head>
 <body>
